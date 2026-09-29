@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '../models/patient.dart';
 import '../state/app_state.dart';
 import '../theme.dart';
+import 'card_scanner_screen.dart';
 import 'patient_details_screen.dart';
 
 class DossierMedicalScreen extends StatefulWidget {
@@ -195,14 +197,7 @@ class _DossierMedicalScreenState extends State<DossierMedicalScreen> {
                       ),
                       const SizedBox(height: 24),
                       FilledButton.icon(
-                        onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Ouverture du scanner de carte...'),
-                              backgroundColor: YamColors.primary,
-                            ),
-                          );
-                        },
+                        onPressed: _openCameraScanner,
                         icon: const Icon(Icons.camera_alt_rounded),
                         label: const Text('Ouvrir la caméra'),
                         style: FilledButton.styleFrom(
@@ -255,6 +250,94 @@ class _DossierMedicalScreenState extends State<DossierMedicalScreen> {
       ),
       body: SafeArea(
         child: _buildContent(),
+      ),
+    );
+  }
+
+  /// Demande la permission caméra puis ouvre l'écran de scan.
+  Future<void> _openCameraScanner() async {
+    final messenger = ScaffoldMessenger.of(context);
+    final permission = await Permission.camera.request();
+    if (!mounted) return;
+
+    if (permission.isPermanentlyDenied) {
+      _showCameraBlockedDialog(canOpenSettings: true);
+      return;
+    }
+    if (!permission.isGranted) {
+      _showCameraBlockedDialog(canOpenSettings: false);
+      return;
+    }
+
+    final scanned = await Navigator.push<String>(
+      context,
+      MaterialPageRoute(builder: (_) => const CardScannerScreen()),
+    );
+    if (scanned == null || !mounted) return;
+
+    final patient = _findPatientById(scanned);
+    if (patient == null) {
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text('Aucun patient trouvé pour ce code : $scanned'),
+          backgroundColor: YamColors.danger,
+        ),
+      );
+      return;
+    }
+
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => PatientDetailsScreen(patient: patient, app: widget.app),
+      ),
+    );
+  }
+
+  /// Retrouve le patient dont l'identifiant de carte correspond au code scanné.
+  ///
+  /// La comparaison ignore la casse et les espaces, pour tolérer les écarts de
+  /// saisie sur la carte.
+  Patient? _findPatientById(String code) {
+    final needle = Patient.normalizeId(code);
+    if (needle.isEmpty) return null;
+
+    for (final patient in _allPatients) {
+      if (Patient.normalizeId(patient.id) == needle) return patient;
+    }
+    return null;
+  }
+
+  void _showCameraBlockedDialog({required bool canOpenSettings}) {
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: YamColors.surface,
+        shape: const RoundedRectangleBorder(borderRadius: kCardRadius),
+        title: const Text(
+          'Permission caméra requise',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: YamColors.text),
+        ),
+        content: Text(
+          canOpenSettings
+              ? "L'accès à la caméra a été refusé définitivement. Activez-le dans les paramètres du téléphone pour scanner une carte."
+              : "L'accès à la caméra a été refusé. Autorisez-le pour scanner une carte patient.",
+          style: const TextStyle(fontSize: 14, color: YamColors.muted, height: 1.4),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Annuler'),
+          ),
+          if (canOpenSettings)
+            TextButton(
+              onPressed: () {
+                Navigator.pop(dialogContext);
+                openAppSettings();
+              },
+              child: const Text('Ouvrir les paramètres'),
+            ),
+        ],
       ),
     );
   }

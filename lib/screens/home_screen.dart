@@ -4,8 +4,8 @@ import '../state/app_state.dart';
 import '../theme.dart';
 import 'dossier_medical_screen.dart';
 import 'encaisser_screen.dart';
-import 'facturer_screen.dart';
-import 'ordonnance_screen.dart';
+import 'facture_liste_screen.dart';
+import 'ordonnance_liste_screen.dart';
 
 /// Accueil : solde + grille d'accès rapide.
 class HomeScreen extends StatefulWidget {
@@ -159,7 +159,7 @@ class _QuickAccessGrid extends StatelessWidget {
           iconBgColor: YamColors.accentSoft,
           onTap: () => Navigator.push(
             context,
-            MaterialPageRoute(builder: (_) => const FacturerScreen()),
+            MaterialPageRoute(builder: (_) => const FactureListeScreen()),
           ),
         ),
         _GridCard(
@@ -170,7 +170,7 @@ class _QuickAccessGrid extends StatelessWidget {
           iconBgColor: YamColors.primarySoft,
           onTap: () => Navigator.push(
             context,
-            MaterialPageRoute(builder: (_) => const OrdonnanceScreen()),
+            MaterialPageRoute(builder: (_) => const OrdonnanceListeScreen()),
           ),
         ),
       ],

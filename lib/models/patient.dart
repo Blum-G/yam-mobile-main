@@ -3,6 +3,7 @@ class Patient {
     required this.nom,
     required this.telephone,
     required this.dateNaissance,
+    this.id = '',
     this.groupeSanguin = 'O+',
     this.sexe = 'Masculin',
     this.adresse = 'Lomé, Quartier Tokoin',
@@ -17,6 +18,10 @@ class Patient {
   final String nom;
   final String telephone;
   final String dateNaissance;
+
+  /// Identifiant lu dans la carte QR (ex: `PAT-2024-00123`).
+  final String id;
+
   final String groupeSanguin;
   final String sexe;
   final String adresse;
@@ -31,6 +36,10 @@ class Patient {
     }
     return nom.substring(0, 2).toUpperCase();
   }
+
+  /// Normalise un code patient pour la comparaison (casse et espaces ignorés).
+  static String normalizeId(String value) =>
+      value.trim().toUpperCase().replaceAll(RegExp(r'\s+'), '');
 
   int get age {
     try {
