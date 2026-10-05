@@ -51,6 +51,74 @@ class _WalletCardState extends State<_WalletCard> {
   bool _isHidden = false;
   final String _balance = "0 F";
 
+  void _showComingSoon(BuildContext context) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        const SnackBar(
+          content: Text('Bientôt disponible'),
+          behavior: SnackBarBehavior.floating,
+          duration: Duration(seconds: 2),
+        ),
+      );
+  }
+
+  void _onRecharge(BuildContext context) {
+    // Point d'accroche pour brancher l'API plus tard
+    _showComingSoon(context);
+  }
+
+  void _onSend(BuildContext context) {
+    // Point d'accroche pour brancher l'API plus tard
+    _showComingSoon(context);
+  }
+
+  void _onWithdraw(BuildContext context) {
+    // Point d'accroche pour brancher l'API plus tard
+    _showComingSoon(context);
+  }
+
+  Widget _buildActionButton({
+    required BuildContext context,
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(7),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.20),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                icon,
+                color: Colors.white,
+                size: 18,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 10,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -69,44 +137,80 @@ class _WalletCardState extends State<_WalletCard> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          const Text(
+            'Solde disponible',
+            style: TextStyle(
+              color: Colors.white70,
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 14),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              const Text(
-                'Solde disponible',
-                style: TextStyle(
-                  color: Colors.white70,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
-                ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    _isHidden ? "•••••• F" : _balance,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 28,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  InkWell(
+                    onTap: () => setState(() => _isHidden = !_isHidden),
+                    borderRadius: BorderRadius.circular(20),
+                    child: Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.15),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        _isHidden ? Icons.visibility_off_rounded : Icons.visibility_rounded,
+                        color: Colors.white,
+                        size: 18,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              InkWell(
-                onTap: () => setState(() => _isHidden = !_isHidden),
-                borderRadius: BorderRadius.circular(20),
-                child: Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.15),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    _isHidden ? Icons.visibility_off_rounded : Icons.visibility_rounded,
-                    color: Colors.white,
-                    size: 18,
-                  ),
+              Padding(
+                padding: const EdgeInsets.only(top: 8, bottom: 2),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _buildActionButton(
+                      context: context,
+                      icon: Icons.add_rounded,
+                      label: 'Recharger',
+                      onTap: () => _onRecharge(context),
+                    ),
+                    const SizedBox(width: 8),
+                    _buildActionButton(
+                      context: context,
+                      icon: Icons.send_rounded,
+                      label: 'Envoyer',
+                      onTap: () => _onSend(context),
+                    ),
+                    const SizedBox(width: 8),
+                    _buildActionButton(
+                      context: context,
+                      icon: Icons.account_balance_wallet_rounded,
+                      label: 'Retirer',
+                      onTap: () => _onWithdraw(context),
+                    ),
+                  ],
                 ),
               ),
             ],
-          ),
-          const SizedBox(height: 10),
-          Text(
-            _isHidden ? "•••••• F" : _balance,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 28,
-              fontWeight: FontWeight.w800,
-              letterSpacing: -0.5,
-            ),
           ),
         ],
       ),
